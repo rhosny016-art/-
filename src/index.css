@@ -1,0 +1,174 @@
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Geist+Mono:wght@500;600;700;800&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-heading: "Tajawal", "Segoe UI", Tahoma, sans-serif;
+  --font-mono: "Geist Mono", "Courier New", ui-monospace, monospace;
+
+  /* ---- Brand palette (centralized tokens) ---- */
+  --color-ink: #102f4d;            /* body text navy */
+  --color-ink-soft: #587185;       /* muted body text */
+  --color-navy: #0d304a;           /* primary navy */
+  --color-navy-deep: #050f1b;      /* hero bg */
+  --color-gold: #c8912e;           /* primary gold */
+  --color-gold-bright: #ffd166;    /* highlight gold */
+  --color-gold-soft: #f3c46a;      /* soft gold */
+  --color-cyan: #1372a5;           /* brand cyan */
+  --color-cyan-bright: #6fe6ff;    /* neon cyan */
+  --color-page: #f5f8fa;           /* page background */
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    margin: 0;
+    min-width: 320px;
+    background-color: #f5f8fa;
+    color: #102f4d;
+    font-family: "Tajawal", "Segoe UI", Tahoma, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  button,
+  a {
+    -webkit-tap-highlight-color: transparent;
+  }
+  ::selection {
+    background: #e9c675;
+    color: #102f4d;
+  }
+}
+
+/* ---- Reusable utility classes ---- */
+@utility text-gradient-gold {
+  background-image: linear-gradient(to left, #ffd166, #dd9927);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@utility glass {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background-color: rgba(7, 41, 60, 0.9);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+/* Subtle film-grain overlay for premium dark sections */
+@utility grain {
+  position: relative;
+}
+@utility grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  mix-blend-mode: overlay;
+}
+
+/* ---- Living city (hero) animation system ---- */
+@keyframes dash-flow {
+  to {
+    stroke-dashoffset: -1000;
+  }
+}
+.traffic-pulse {
+  animation: dash-flow linear infinite;
+}
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0.15;
+    transform: scale(0.6);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.25);
+  }
+}
+.twinkle {
+  animation: twinkle 2.8s ease-in-out infinite;
+}
+@keyframes beam-pulse {
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.85;
+  }
+}
+.beam-pulse {
+  animation: beam-pulse 3.6s ease-in-out infinite;
+}
+@keyframes soft-glow {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+.soft-glow {
+  animation: soft-glow 4.2s ease-in-out infinite;
+}
+
+/* ---- Shimmer sweep for the CTA band ---- */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-120%) skewX(-12deg);
+  }
+  100% {
+    transform: translateX(220%) skewX(-12deg);
+  }
+}
+.shimmer-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 28%;
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(255, 255, 255, 0.22) 50%,
+    transparent
+  );
+  animation: shimmer 5.5s ease-in-out infinite;
+  animation-delay: 1.5s;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  a,
+  button {
+    cursor: pointer;
+  }
+}
+
+/* Higher-contrast override for users who request it */
+@media (prefers-contrast: more) {
+  .text-gradient-gold {
+    background-image: none;
+    color: #b57411;
+    -webkit-text-fill-color: #b57411;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
