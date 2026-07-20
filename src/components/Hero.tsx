@@ -1,125 +1,329 @@
-import { motion, useReducedMotion } from "framer-motion";
-import { ArrowLeft, CheckCircle2, MessageCircle, Star } from "lucide-react";
-import { Button } from "./ui/Button";
-import { HeroVisual } from "./HeroVisual";
+import { motion } from "framer-motion";
+import { ArrowLeft, Navigation, Phone, Search, Star, TrendingUp } from "lucide-react";
+import WhatsAppIcon from "./WhatsAppIcon";
+import { WA_DEFAULT, scrollToSection } from "../lib/site";
 
-function scrollTo(id: string) {
-  document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
-}
+const fadeUp = {
+  initial: { opacity: 0, y: 26 },
+  animate: { opacity: 1, y: 0 },
+};
 
-export function Hero() {
-  const reduceMotion = useReducedMotion();
-  const enter = (delay: number) => ({
-    initial: { opacity: 0, y: reduceMotion ? 0 : 18 },
-    animate: { opacity: 1, y: 0 },
-    transition: { duration: 0.65, delay, ease: [0.22, 1, 0.36, 1] as const },
-  });
-
+export default function Hero() {
   return (
-    <section id="home" className="grain relative isolate overflow-hidden bg-[#050f1b]" aria-labelledby="hero-title">
-      {/* atmosphere */}
+    <section
+      id="hero"
+      className="grain relative overflow-hidden pt-[118px] lg:pt-[132px]"
+      style={{
+        background:
+          "linear-gradient(180deg, #E8F1FA 0%, #F1F7FD 38%, #FFFFFF 82%)",
+      }}
+    >
+      {/* luminous backdrop: rays + gold & blue glows + grid */}
+      <div className="light-rays absolute inset-0" aria-hidden="true" />
       <div
+        className="bg-grid absolute inset-0 opacity-70 [mask-image:radial-gradient(ellipse_72%_62%_at_50%_30%,black,transparent)]"
         aria-hidden="true"
-        className="absolute inset-0 -z-10 bg-[radial-gradient(1100px_620px_at_82%_-8%,rgba(38,110,142,0.32),transparent_62%),radial-gradient(900px_560px_at_6%_108%,rgba(200,145,46,0.16),transparent_60%),linear-gradient(180deg,#071a2d_0%,#050f1b_72%)]"
       />
       <div
+        className="absolute -top-32 right-[12%] h-[420px] w-[420px] rounded-full bg-amber-200/50 blur-[130px]"
         aria-hidden="true"
-        className="absolute inset-0 -z-10 opacity-70 [background-image:linear-gradient(rgba(125,185,215,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(125,185,215,0.05)_1px,transparent_1px)] [background-size:40px_40px] [mask-image:radial-gradient(75%_60%_at_50%_32%,black,transparent)]"
       />
-      <motion.div
+      <div
+        className="absolute top-24 left-[2%] h-[380px] w-[380px] rounded-full bg-brand-200/45 blur-[120px]"
         aria-hidden="true"
-        className="absolute -right-40 top-24 -z-10 h-[480px] w-[480px] rounded-full bg-[#1d6d8c]/20 blur-3xl"
-        animate={reduceMotion ? undefined : { opacity: [0.5, 0.9, 0.5], scale: [1, 1.08, 1] }}
-        transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
-      />
-      <motion.div
-        aria-hidden="true"
-        className="absolute -left-32 bottom-10 -z-10 h-[420px] w-[420px] rounded-full bg-[#c8912e]/15 blur-3xl"
-        animate={reduceMotion ? undefined : { opacity: [0.4, 0.8, 0.4], scale: [1, 1.1, 1] }}
-        transition={{ duration: 11, repeat: Infinity, ease: "easeInOut", delay: 1.5 }}
       />
 
-      <div className="mx-auto grid max-w-7xl items-center gap-10 px-5 pb-20 pt-32 sm:pt-36 lg:grid-cols-[0.95fr_1.05fr] lg:gap-6 lg:pb-24 lg:pt-40">
-        {/* copy */}
-        <div className="order-1 lg:order-2 lg:pr-2">
-          <motion.div
-            {...enter(0.05)}
-            className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#8a651f]/50 bg-[#c8912e]/10 px-3 py-1.5 text-xs font-bold text-[#f3c46a] backdrop-blur-sm"
+      <div className="relative mx-auto grid max-w-7xl items-center gap-12 px-4 pb-16 sm:px-6 lg:grid-cols-[1.02fr_0.98fr] lg:gap-6 lg:px-8 lg:pb-24">
+        {/* ------------------------------------------------ copy */}
+        <div className="flex flex-col items-start gap-7">
+          <motion.p
+            {...fadeUp}
+            transition={{ duration: 0.55 }}
+            className="inline-flex items-center gap-2.5 text-sm font-black text-brand-900"
           >
-            <CheckCircle2 className="h-3.5 w-3.5" />
+            <span className="relative flex h-2.5 w-2.5">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-80" />
+              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-amber-500" />
+            </span>
             وكالة تسويق رقمي متكاملة — مصر والخليج
-          </motion.div>
+          </motion.p>
 
           <motion.h1
-            {...enter(0.13)}
-            id="hero-title"
-            className="max-w-[620px] text-[2.45rem] font-black leading-[1.2] tracking-[-0.045em] text-white sm:text-6xl lg:text-[4.1rem]"
+            {...fadeUp}
+            transition={{ duration: 0.6, delay: 0.08 }}
+            className="text-[2.5rem] font-black leading-[1.3] tracking-tight text-balance text-night-900 sm:text-6xl sm:leading-[1.22] xl:text-[4.2rem] xl:leading-[1.18]"
           >
             نضع نشاطك التجاري
             <br />
             على{" "}
-            <span className="relative whitespace-nowrap">
-              <span className="text-gradient-gold">خريطة النجاح</span>
-              <span aria-hidden="true" className="absolute -bottom-2 right-0 h-1 w-full rounded-full bg-gradient-to-l from-[#ffd166]/90 to-[#dd9927]/30" />
-              <span aria-hidden="true" className="absolute -inset-x-3 -inset-y-1 -z-10 rounded-full bg-[#c8912e]/20 blur-xl" />
+            <span className="relative inline-block pb-2">
+              <span className="text-gold-animated">خريطة النجاح</span>
+              <svg
+                className="absolute -bottom-1 right-0 w-full"
+                viewBox="0 0 260 14"
+                fill="none"
+                preserveAspectRatio="none"
+                aria-hidden="true"
+              >
+                <defs>
+                  <linearGradient id="gold-line" x1="0" y1="0" x2="260" y2="0" gradientUnits="userSpaceOnUse">
+                    <stop offset="0" stopColor="#F59E0B" stopOpacity="0" />
+                    <stop offset="0.5" stopColor="#F59E0B" />
+                    <stop offset="1" stopColor="#FCD34D" stopOpacity="0.2" />
+                  </linearGradient>
+                </defs>
+                <path
+                  d="M6 10 C 70 3.5, 190 3.5, 254 9"
+                  stroke="url(#gold-line)"
+                  strokeWidth="5"
+                  strokeLinecap="round"
+                />
+              </svg>
             </span>
           </motion.h1>
 
-          <motion.p {...enter(0.22)} className="mt-7 max-w-[560px] text-base font-medium leading-8 text-[#9fbccd] sm:text-lg">
-            نساعد الأنشطة التجارية على تصدر نتائج البحث المحلي، وتحويل الظهور الرقمي إلى عملاء حقيقيين عبر خرائط Google وحملات إعلانية مدروسة بعناية.
+          <motion.p
+            {...fadeUp}
+            transition={{ duration: 0.6, delay: 0.16 }}
+            className="max-w-xl text-base leading-9 font-semibold text-slate-500 sm:text-lg sm:leading-10"
+          >
+            نساعد الأنشطة التجارية على تصدّر نتائج البحث المحلي، وتحويل الظهور
+            الرقمي إلى عملاء حقيقيين — عبر خرائط Google وحملات إعلانية مدروسة
+            بعناية على كل المنصات.
           </motion.p>
 
-          <motion.div {...enter(0.31)} className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <Button
-              onClick={() => scrollTo("contact")}
-              size="lg"
-              className="h-[52px] rounded-full bg-[#c48325] px-6 text-base font-black text-white shadow-[0_12px_25px_rgba(190,126,26,0.30),inset_0_1px_0_rgba(255,255,255,0.25)] transition hover:-translate-y-0.5 hover:bg-[#d8952f] hover:shadow-[0_18px_34px_rgba(190,126,26,0.42)]"
+          <motion.div
+            {...fadeUp}
+            transition={{ duration: 0.6, delay: 0.24 }}
+            className="flex w-full flex-col gap-3.5 sm:w-auto sm:flex-row sm:items-center"
+          >
+            <a
+              href={WA_DEFAULT}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-gold inline-flex min-h-[56px] items-center justify-center gap-2.5 rounded-full px-8 text-base font-extrabold text-white transition-all duration-300 hover:-translate-y-0.5 hover:scale-[1.02] active:scale-95"
             >
-              <MessageCircle className="ml-2 h-5 w-5" />
+              <WhatsAppIcon className="h-5 w-5" />
               احجز استشارتك المجانية
-            </Button>
-            <Button
-              onClick={() => scrollTo("services")}
-              variant="outline"
-              size="lg"
-              className="h-[52px] rounded-full border-white/20 bg-white/5 px-6 text-base font-bold text-white backdrop-blur-sm transition hover:-translate-y-0.5 hover:border-white/35 hover:bg-white/10"
+            </a>
+            <button
+              onClick={() => scrollToSection("services")}
+              className="group inline-flex min-h-[56px] items-center justify-center gap-2 rounded-full border border-slate-300/90 bg-white/80 px-8 text-base font-extrabold text-night-900 shadow-[0_10px_30px_-12px_rgba(13,42,92,0.25)] backdrop-blur transition-all duration-300 hover:-translate-y-0.5 hover:border-amber-300 hover:bg-white active:scale-95"
             >
-              <ArrowLeft className="ml-2 h-5 w-5" />
               استكشف خدماتنا
-            </Button>
+              <ArrowLeft className="h-4.5 w-4.5 transition-transform duration-300 group-hover:-translate-x-1" />
+            </button>
           </motion.div>
 
+          {/* trust glass bar */}
           <motion.div
-            {...enter(0.4)}
-            className="mt-9 flex flex-wrap items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.06] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-md sm:inline-flex sm:gap-5"
+            {...fadeUp}
+            transition={{ duration: 0.6, delay: 0.32 }}
+            className="glass-chip flex w-full max-w-xl flex-wrap items-center justify-between gap-x-6 gap-y-3 rounded-3xl px-5 py-4 sm:rounded-full sm:px-6"
           >
-            <div className="flex -space-x-2 space-x-reverse" aria-label="منصات شركائنا">
-              <span className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-[#0b2033] bg-white text-sm font-black text-[#4285f4] shadow-[0_4px_10px_rgba(66,133,244,0.35)]">G</span>
-              <span className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-[#0b2033] bg-[#edf7ff] text-xs font-black text-[#178bda] shadow-[0_4px_10px_rgba(23,139,218,0.30)]">ads</span>
-              <span className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-[#0b2033] bg-[#eaf6ed] text-xs font-black text-[#27a457] shadow-[0_4px_10px_rgba(39,164,87,0.30)]">M</span>
-            </div>
-            <div>
-              <p className="text-sm font-black text-white">انضم إلى +250 شريك نجاح</p>
-              <p className="mt-1 flex items-center gap-1.5 text-xs font-bold text-[#8fb0c4]">
-                <span>4.9 من +200 مراجعة</span>
-                <span className="inline-flex">
-                  {Array.from({ length: 5 }).map((_, index) => (
-                    <Star key={index} className="mt-0.5 h-3 w-3 fill-[#ffc93c] text-[#ffc93c]" />
-                  ))}
+            <div className="flex items-center">
+              {["أ", "س", "م", "خ"].map((c, i) => (
+                <span
+                  key={i}
+                  className={`flex h-9 w-9 items-center justify-center rounded-full border-2 border-white text-[11px] font-black text-white shadow-md ${
+                    i !== 0 ? "-ms-3" : ""
+                  } ${
+                    ["bg-brand-600", "bg-emerald-500", "bg-amber-500", "bg-night-900"][i]
+                  }`}
+                >
+                  {c}
                 </span>
-              </p>
+              ))}
+              <span className="ms-3 text-sm font-extrabold text-slate-700">
+                انضم إلى <span className="font-black text-amber-600 ltr-nums">+250</span> شريك نجاح
+              </span>
             </div>
+            <span className="flex items-center gap-1.5 text-sm font-extrabold text-slate-700">
+              <span className="flex text-amber-400" aria-hidden="true">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <Star key={i} className="h-4 w-4 fill-amber-400 drop-shadow-[0_1px_2px_rgba(245,158,11,0.5)]" />
+                ))}
+              </span>
+              <span className="ltr-nums font-black">4.9</span>
+              <span className="text-slate-400">من +200 مراجعة</span>
+            </span>
           </motion.div>
         </div>
 
-        {/* living 3D city */}
+        {/* ------------------------------------------------ 3D visual */}
         <motion.div
-          initial={{ opacity: 0, y: reduceMotion ? 0 : 28, scale: reduceMotion ? 1 : 0.97 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 0.9, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
-          className="order-2 lg:order-1"
+          initial={{ opacity: 0, scale: 0.92, y: 36 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ duration: 0.9, delay: 0.15, ease: "easeOut" }}
+          className="relative mx-auto w-full max-w-[600px]"
         >
-          <HeroVisual />
+          {/* radiant golden halo behind the city */}
+          <div
+            className="absolute inset-x-[12%] top-[8%] aspect-square rounded-full bg-[radial-gradient(circle,rgba(251,191,36,0.4)_0%,rgba(251,191,36,0.12)_45%,transparent_70%)] blur-2xl"
+            aria-hidden="true"
+          />
+          <div
+            className="absolute inset-x-[4%] bottom-[10%] aspect-[3/2] rounded-full bg-[radial-gradient(circle,rgba(51,134,252,0.22)_0%,transparent_70%)] blur-3xl"
+            aria-hidden="true"
+          />
+
+          {/* the 3D city */}
+          <motion.div
+            animate={{ y: [0, -14, 0] }}
+            transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+            className="relative"
+          >
+            <picture>
+              <source srcSet="/hero-city.avif" type="image/avif" />
+              <source srcSet="/hero-city.webp" type="image/webp" />
+              <img
+                src="/hero-city.png"
+                alt="مدينة مصغرة ثلاثية الأبعاد يعلوها دبوس خريطة ذهبي يرمز إلى تصدّر نشاطك التجاري"
+                width={640}
+                height={640}
+                className="relative z-10 mx-auto w-full max-w-[560px] drop-shadow-[0_50px_60px_rgba(10,35,80,0.35)]"
+                draggable={false}
+                fetchPriority="high"
+              />
+            </picture>
+            {/* soft ground reflection */}
+            <div
+              className="absolute bottom-[2%] left-1/2 z-0 h-14 w-[68%] -translate-x-1/2 rounded-[100%] bg-night-950/25 blur-2xl"
+              aria-hidden="true"
+            />
+          </motion.div>
+
+          {/* floating glass chips */}
+          <motion.div
+            initial={{ opacity: 0, y: -16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.7, duration: 0.6 }}
+            className="absolute -top-1 right-0 z-20 sm:right-2"
+          >
+            <motion.div
+              animate={{ y: [0, -8, 0] }}
+              transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+              className="glass-chip flex items-center gap-2.5 rounded-2xl px-4 py-3"
+            >
+              <Search className="h-4 w-4 shrink-0 text-brand-600" aria-hidden="true" />
+              <span className="max-w-[170px] truncate text-[12.5px] font-extrabold text-night-900">
+                أفضل عيادة أسنان قريبة مني…
+              </span>
+              <span className="btn-gold flex h-7 w-7 items-center justify-center rounded-lg text-white">
+                <Search className="h-3.5 w-3.5" aria-hidden="true" />
+              </span>
+            </motion.div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.85, duration: 0.6 }}
+            className="absolute left-0 top-[22%] z-20 hidden sm:block"
+          >
+            <motion.div
+              animate={{ y: [0, 10, 0] }}
+              transition={{ duration: 5.6, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+              className="glass-chip rounded-2xl px-4 py-3"
+            >
+              <div className="flex items-center gap-2">
+                <TrendingUp className="h-4 w-4 text-amber-500" aria-hidden="true" />
+                <p className="text-xl font-black leading-none text-night-900 ltr-nums">+300%</p>
+              </div>
+              <svg viewBox="0 0 90 26" className="mt-1.5 w-24" aria-hidden="true">
+                <path
+                  d="M3 22 C 18 20, 24 14, 36 15 C 48 16, 54 8, 68 7 C 76 6.5, 82 4, 87 3"
+                  fill="none"
+                  stroke="#F59E0B"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                />
+                <circle cx="87" cy="3" r="2.6" fill="#F59E0B" />
+              </svg>
+              <p className="mt-1 text-[10.5px] font-extrabold text-slate-500">نمو الظهور المحلي</p>
+            </motion.div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 1, duration: 0.6 }}
+            className="absolute bottom-[30%] left-0 z-20 sm:left-1"
+          >
+            <motion.div
+              animate={{ y: [0, -9, 0] }}
+              transition={{ duration: 6.2, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+              className="glass-chip flex items-center gap-3 rounded-2xl px-4 py-3"
+            >
+              <span className="btn-gold flex h-10 w-10 items-center justify-center rounded-xl text-white">
+                <Phone className="h-4.5 w-4.5" aria-hidden="true" />
+              </span>
+              <div>
+                <p className="text-lg font-black leading-none text-night-900 ltr-nums">+500</p>
+                <p className="mt-1 text-[10.5px] font-extrabold text-slate-500">
+                  مكالمة شهرية من الخريطة
+                </p>
+              </div>
+            </motion.div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.1, duration: 0.6 }}
+            className="absolute bottom-[4%] right-0 z-20 sm:right-2"
+          >
+            <motion.div
+              animate={{ y: [0, 8, 0] }}
+              transition={{ duration: 6.6, repeat: Infinity, ease: "easeInOut", delay: 0.3 }}
+              className="glass-chip flex items-center gap-3 rounded-2xl px-4 py-3.5"
+            >
+              <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-white text-lg font-black text-brand-600 shadow-md ring-1 ring-slate-100">
+                G
+              </span>
+              <div>
+                <p className="text-[13px] font-black text-night-900">نشاطك التجاري</p>
+                <p className="mt-1 flex items-center gap-1.5 text-[10.5px] font-extrabold text-slate-500">
+                  <span className="flex text-amber-400" aria-hidden="true">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <Star key={i} className="h-3 w-3 fill-amber-400" />
+                    ))}
+                  </span>
+                  <span className="ltr-nums">4.9</span>
+                  <span className="rounded-full bg-emerald-100/90 px-2 py-0.5 text-[9.5px] font-black text-emerald-700">
+                    مفتوح الآن
+                  </span>
+                </p>
+              </div>
+              <Navigation className="h-4 w-4 text-brand-500" aria-hidden="true" />
+            </motion.div>
+          </motion.div>
+
+          {/* golden dust particles */}
+          {(
+            [
+              { top: "12%", right: "18%", size: 6, delay: 0 },
+              { top: "34%", left: "10%", size: 5, delay: 1.2 },
+              { bottom: "22%", right: "8%", size: 7, delay: 2 },
+              { top: "55%", left: "22%", size: 4, delay: 0.6 },
+            ] as { top?: string; bottom?: string; left?: string; right?: string; size: number; delay: number }[]
+          ).map((p, i) => (
+            <motion.span
+              key={i}
+              className="absolute z-20 rounded-full bg-amber-300 shadow-[0_0_14px_4px_rgba(251,191,36,0.55)]"
+              style={{
+                top: p.top,
+                bottom: p.bottom,
+                left: p.left,
+                right: p.right,
+                width: p.size,
+                height: p.size,
+              }}
+              animate={{ y: [0, -16, 0], opacity: [0.4, 1, 0.4] }}
+              transition={{ duration: 4 + i, repeat: Infinity, ease: "easeInOut", delay: p.delay }}
+              aria-hidden="true"
+            />
+          ))}
         </motion.div>
       </div>
     </section>

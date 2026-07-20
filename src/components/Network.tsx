@@ -1,97 +1,193 @@
-import { Globe2, MapPinned, Sparkles, Star } from "lucide-react";
-import { motion, useReducedMotion } from "framer-motion";
-import { CountUp } from "./ui/CountUp";
+import { useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { MessageSquare, Video } from "lucide-react";
+import SectionHeading from "./SectionHeading";
+import { BRANCHES } from "../data/content";
 
-type Stat = {
-  value: number;
-  decimals?: number;
-  prefix?: string;
-  label: string;
-  glow: string;
-};
+const HQ = BRANCHES.find((b) => b.hq)!;
 
-const stats: Stat[] = [
-  { value: 250, prefix: "+", label: "شريك نجاح", glow: "rgba(243,196,106,0.16)" },
-  { value: 4.9, decimals: 1, label: "متوسط تقييم عملائنا", glow: "rgba(255,209,102,0.18)" },
-  { value: 200, prefix: "+", label: "مراجعة موثقة", glow: "rgba(72,215,246,0.16)" },
-  { value: 8, label: "أسواق نعمل بها", glow: "rgba(72,215,246,0.14)" },
-];
+function arcPath(from: { x: number; y: number }, to: { x: number; y: number }) {
+  const mx = (from.x + to.x) / 2;
+  const my = Math.min(from.y, to.y) - 14;
+  return `M ${from.x} ${from.y} Q ${mx} ${my} ${to.x} ${to.y}`;
+}
 
-export function Network() {
-  const reduceMotion = useReducedMotion();
+export default function Network() {
+  const [selected, setSelected] = useState(BRANCHES[1]);
+
   return (
-    <section id="network" className="grain relative overflow-hidden bg-[#103652] py-20 text-white sm:py-24" aria-labelledby="network-title">
-      <div
-        className="absolute inset-0 opacity-30"
-        style={{
-          backgroundImage:
-            "radial-gradient(circle at 15% 20%, rgba(247,196,90,.45), transparent 22%), radial-gradient(circle at 85% 90%, rgba(42,174,194,.42), transparent 26%)",
-        }}
-        aria-hidden="true"
-      />
-      <div className="relative mx-auto max-w-6xl px-5">
-        <div className="grid items-end gap-10 lg:grid-cols-[1fr_1.25fr]">
-          <div>
-            <p className="mb-3 flex items-center gap-2 text-sm font-black text-[#f0be5a]">
-              <Sparkles className="h-4 w-4" />
-              شبكتنا تكبر كل يوم
-            </p>
-            <h2 id="network-title" className="text-3xl font-black leading-tight tracking-[-0.035em] sm:text-4xl">
-              علامات تجارية تثق بأن نجاحها يستحق أن يُرى
-            </h2>
-            <p className="mt-5 max-w-md text-base font-medium leading-8 text-[#d0e0e9]">
-              من القاهرة إلى الرياض والخليج، نبني شبكة من الشركاء الذين اختاروا الظهور الصحيح والنمو المستدام.
-            </p>
-            <div className="mt-7 flex flex-wrap gap-2">
-              <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-2 text-xs font-bold text-white">
-                <MapPinned className="h-3.5 w-3.5 text-[#f0be5a]" />
-                مصر والخليج
-              </span>
-              <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-2 text-xs font-bold text-white">
-                <Globe2 className="h-3.5 w-3.5 text-[#f0be5a]" />
-                حضور متعدد الأسواق
-              </span>
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-3 sm:gap-4">
-            {stats.map((stat, index) => (
-              <motion.div
-                key={stat.label}
-                initial={{ opacity: 0, y: reduceMotion ? 0 : 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.08 }}
-                style={{ boxShadow: `0 0 40px ${stat.glow}` }}
-                className="rounded-2xl border border-white/15 bg-white/[0.09] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,.12)] backdrop-blur-md"
+    <section id="network" className="relative scroll-mt-20 overflow-hidden bg-night-950 py-20 lg:py-28">
+      <div className="bg-grid-dark absolute inset-0 opacity-40 [mask-image:radial-gradient(ellipse_70%_70%_at_50%_40%,black,transparent)]" aria-hidden="true" />
+      <div className="absolute -top-24 right-1/4 h-80 w-80 rounded-full bg-brand-600/20 blur-[120px]" aria-hidden="true" />
+      <div className="absolute bottom-0 left-[8%] h-72 w-72 rounded-full bg-accent-600/15 blur-[120px]" aria-hidden="true" />
+
+      <div className="relative mx-auto grid max-w-7xl items-center gap-14 px-4 sm:px-6 lg:grid-cols-2 lg:gap-16 lg:px-8">
+        {/* copy + branch list */}
+        <div>
+          <SectionHeading
+            dark
+            align="start"
+            eyebrow="شبكة أعمالنا الإقليمية"
+            title="حضور عابر للحدود يخدمك أينما كنت"
+            description="نعمل كمنظومة سحابية متكاملة تخدم عملاءنا وشركاء نجاحنا في مختلف أنحاء الخليج والوطن العربي — بأقصى إنتاجية وسرعة، وكأننا في مكتبك المجاور."
+          />
+
+          <div className="mt-8 space-y-3.5">
+            {[
+              {
+                icon: Video,
+                title: "جلسات نمو تفاعلية بالفيديو",
+                text: "نلتقيك عبر Zoom وMeet أسبوعياً لتخطيط الحملات وتحليل الأرقام معاً.",
+                tone: "bg-brand-500/15 text-brand-300",
+              },
+              {
+                icon: MessageSquare,
+                title: "مجموعات عمل ومتابعة فورية",
+                text: "فريق مخصص لك على WhatsApp لدعم استثنائي وسريع على مدار الساعة.",
+                tone: "bg-emerald-500/15 text-emerald-300",
+              },
+            ].map((f) => (
+              <div
+                key={f.title}
+                className="flex items-start gap-3.5 rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur"
               >
-                <CountUp
-                  value={stat.value}
-                  decimals={stat.decimals ?? 0}
-                  prefix={stat.prefix ?? ""}
-                  duration={1.8}
-                  className="font-mono text-3xl font-bold text-[#f3c46a] sm:text-4xl"
-                />
-                <p className="mt-2 text-sm font-bold text-[#dceaf1]">{stat.label}</p>
-                {stat.label.includes("تقييم") ? (
-                  <span className="mt-2 flex gap-0.5">
-                    {Array.from({ length: 5 }).map((_, starIndex) => (
-                      <Star key={starIndex} className="h-3 w-3 fill-[#f3c46a] text-[#f3c46a]" />
-                    ))}
-                  </span>
-                ) : null}
-              </motion.div>
+                <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${f.tone}`}>
+                  <f.icon className="h-5 w-5" aria-hidden="true" />
+                </span>
+                <div>
+                  <h4 className="text-sm font-black text-white">{f.title}</h4>
+                  <p className="mt-1 text-xs leading-6 font-bold text-slate-400">{f.text}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <p className="mt-8 mb-3 text-[11px] font-black uppercase tracking-widest text-slate-500">
+            تأثير أعمالنا الرقمية في الوطن العربي
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {BRANCHES.map((b) => (
+              <button
+                key={b.id}
+                onClick={() => setSelected(b)}
+                className={`rounded-full border px-4 py-2 text-xs font-extrabold transition-all duration-200 active:scale-95 ${
+                  selected.id === b.id
+                    ? "border-accent-500 bg-accent-500/15 text-accent-300"
+                    : "border-white/10 bg-white/5 text-slate-300 hover:border-white/25 hover:text-white"
+                }`}
+              >
+                {b.city}، {b.country}
+              </button>
             ))}
           </div>
         </div>
-        <div className="mt-12 border-t border-white/15 pt-8">
-          <p className="text-center text-xs font-bold tracking-[0.22em] text-[#a9c6d5]">منصات نعمل معها ونفهمها</p>
-          <div className="mt-5 flex flex-wrap items-center justify-center gap-3 text-center">
-            <span className="rounded-xl bg-white px-5 py-3 text-lg font-black text-[#4285f4] shadow-lg">Google</span>
-            <span className="rounded-xl bg-white px-5 py-3 text-sm font-black text-[#1877f2] shadow-lg">Meta Business</span>
-            <span className="rounded-xl bg-white px-5 py-3 text-sm font-black text-[#d34432] shadow-lg">Google Ads</span>
-            <span className="rounded-xl bg-white px-5 py-3 text-sm font-black text-[#0a66c2] shadow-lg">LinkedIn</span>
+
+        {/* interactive map */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true, margin: "-80px" }}
+          transition={{ duration: 0.7 }}
+          className="relative overflow-hidden rounded-[1.75rem] border border-white/10 bg-night-900 shadow-2xl"
+        >
+          <div className="bg-dots-light absolute inset-0 opacity-60" aria-hidden="true" />
+
+          <svg viewBox="0 0 100 80" className="relative block h-auto w-full" role="img" aria-label="خريطة فروع دلّني في الوطن العربي">
+            {/* arcs from HQ */}
+            {BRANCHES.filter((b) => !b.hq).map((b) => (
+              <path
+                key={`arc-${b.id}`}
+                d={arcPath(HQ, b)}
+                fill="none"
+                stroke={selected.id === b.id ? "#F97316" : "#3386FC"}
+                strokeOpacity={selected.id === b.id ? 0.9 : 0.35}
+                strokeWidth={selected.id === b.id ? 0.8 : 0.45}
+                className="arc-dash transition-all duration-300"
+              />
+            ))}
+
+            {/* branch nodes */}
+            {BRANCHES.map((b) => {
+              const isSel = selected.id === b.id;
+              return (
+                <g
+                  key={b.id}
+                  transform={`translate(${b.x} ${b.y})`}
+                  onClick={() => setSelected(b)}
+                  className="cursor-pointer"
+                  role="button"
+                  aria-label={`فرع ${b.city}`}
+                >
+                  <circle r={b.hq ? 6 : 4.5} fill="transparent" />
+                  <circle
+                    className="pin-ring"
+                    r={b.hq ? 2.6 : 1.9}
+                    fill={b.hq || isSel ? "#F97316" : "#3386FC"}
+                    opacity="0.6"
+                  />
+                  <circle
+                    r={b.hq ? 2.6 : 1.9}
+                    fill={b.hq ? "#F97316" : isSel ? "#FBBF24" : "#3386FC"}
+                    stroke="#fff"
+                    strokeWidth="0.45"
+                    className="transition-all duration-300"
+                  />
+                  <text
+                    y={b.hq ? -4.6 : -3.6}
+                    textAnchor="middle"
+                    fontSize="3.1"
+                    fontWeight="800"
+                    fill={isSel || b.hq ? "#fff" : "#B9C6DE"}
+                    fontFamily="Cairo, sans-serif"
+                  >
+                    {b.city}
+                  </text>
+                  {b.hq && (
+                    <text
+                      y={6.4}
+                      textAnchor="middle"
+                      fontSize="2.4"
+                      fontWeight="700"
+                      fill="#FBBF24"
+                      fontFamily="Cairo, sans-serif"
+                    >
+                      المقر الرئيسي
+                    </text>
+                  )}
+                </g>
+              );
+            })}
+          </svg>
+
+          {/* selected branch info */}
+          <div className="relative border-t border-white/10 bg-night-950/70 px-5 py-4 backdrop-blur">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={selected.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.25 }}
+                className="flex items-start justify-between gap-4"
+              >
+                <div>
+                  <p className="text-sm font-black text-white">
+                    {selected.city}، {selected.country}
+                    {selected.hq && (
+                      <span className="ms-2 rounded-full bg-accent-500/15 px-2 py-0.5 text-[10px] font-black text-accent-300">
+                        المقر الرئيسي
+                      </span>
+                    )}
+                  </p>
+                  <p className="mt-1 text-xs leading-6 font-bold text-slate-400">{selected.blurb}</p>
+                </div>
+                <span className="shrink-0 rounded-xl bg-brand-600/20 px-3 py-1.5 text-xs font-black text-brand-300">
+                  {selected.stat}
+                </span>
+              </motion.div>
+            </AnimatePresence>
           </div>
-        </div>
+        </motion.div>
       </div>
     </section>
   );

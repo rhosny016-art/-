@@ -1,49 +1,69 @@
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "./ui/Accordion";
-import { SectionTitle } from "./SectionTitle";
+import { useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { ChevronDown } from "lucide-react";
+import SectionHeading from "./SectionHeading";
+import { FAQS } from "../data/content";
 
-const questions = [
-  {
-    question: "متى يمكن أن أرى نتائج الظهور على خرائط Google؟",
-    answer: "تعتمد المدة على وضع ملفك الحالي والمنافسة في منطقتك، لكن نبدأ عادةً بتحسينات واضحة خلال الأسابيع الأولى، ثم نبني نتائج ثابتة بشكل تدريجي ومدروس.",
-  },
-  {
-    question: "هل تعملون مع الشركات خارج مصر؟",
-    answer: "نعم. نعمل مع علامات تجارية في مصر والسعودية والإمارات وباقي أسواق الخليج، مع استراتيجية تراعي لغة وسلوك كل سوق.",
-  },
-  {
-    question: "ما الذي يشمله تقرير الأداء الشهري؟",
-    answer: "ستحصل على صورة مباشرة للظهور، التفاعل، المكالمات، الاتجاهات، والتقييمات، مع توصيات واضحة للخطوة التالية.",
-  },
-  {
-    question: "هل يمكن البدء بخدمة واحدة فقط؟",
-    answer: "بالتأكيد. نبدأ من الأولوية التي تحقق أكبر أثر لعملك، ثم نوسع المنظومة عندما يكون التوقيت مناسباً.",
-  },
-];
+export default function Faq() {
+  const [open, setOpen] = useState<number | null>(0);
 
-export function Faq() {
   return (
-    <section id="faq" className="relative overflow-hidden bg-[#f5f8fa] py-20 sm:py-28" aria-labelledby="faq-title">
-      <div className="absolute bottom-0 right-0 h-72 w-72 rounded-full bg-[#fff0c8]/45 blur-3xl" aria-hidden="true" />
-      <div className="relative mx-auto max-w-3xl px-5">
-        <div id="faq-title">
-          <SectionTitle
-            eyebrow="الأسئلة الشائعة"
-            title="كل ما تريد معرفته قبل البداية"
-            description="إجابات مختصرة وواضحة لمساعدتك على اتخاذ الخطوة التالية بثقة."
-          />
+    <section id="faq" className="relative scroll-mt-20 bg-slate-50/70 py-20 lg:py-28">
+      <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+        <SectionHeading
+          eyebrow="الأسئلة الشائعة"
+          title="إجابات واضحة على أكثر ما يهمّك"
+          description="جمعنا الأسئلة التي تصلنا يومياً من أصحاب الأنشطة التجارية وأجبنا عنها بشفافية كاملة."
+        />
+
+        <div className="mt-12 space-y-3.5">
+          {FAQS.map((f, i) => {
+            const isOpen = open === i;
+            return (
+              <motion.div
+                key={f.q}
+                initial={{ opacity: 0, y: 18 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-40px" }}
+                transition={{ duration: 0.45, delay: i * 0.05 }}
+                className={`overflow-hidden rounded-2xl border bg-white transition-colors duration-300 ${
+                  isOpen ? "border-brand-300 shadow-[0_16px_40px_-18px_rgba(0,102,204,0.3)]" : "border-slate-200/80"
+                }`}
+              >
+                <button
+                  onClick={() => setOpen(isOpen ? null : i)}
+                  aria-expanded={isOpen}
+                  className="flex w-full items-center justify-between gap-4 px-6 py-5 text-start"
+                >
+                  <span className={`text-[15px] font-black leading-8 sm:text-base ${isOpen ? "text-brand-700" : "text-slate-800"}`}>
+                    {f.q}
+                  </span>
+                  <span
+                    className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-all duration-300 ${
+                      isOpen ? "rotate-180 bg-brand-600 text-white" : "bg-slate-100 text-slate-500"
+                    }`}
+                  >
+                    <ChevronDown className="h-4.5 w-4.5" aria-hidden="true" />
+                  </span>
+                </button>
+                <AnimatePresence initial={false}>
+                  {isOpen && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.32, ease: "easeInOut" }}
+                    >
+                      <p className="border-t border-slate-100 px-6 pb-6 pt-4 text-sm leading-9 font-medium text-slate-600">
+                        {f.a}
+                      </p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
+            );
+          })}
         </div>
-        <Accordion
-          type="single"
-          defaultValue="question-0"
-          className="mt-10 rounded-3xl border border-white bg-white/80 px-5 shadow-[0_14px_34px_rgba(20,62,83,0.07)] backdrop-blur-md sm:px-7"
-        >
-          {questions.map((item, index) => (
-            <AccordionItem key={item.question} value={`question-${index}`} className="border-[#e7edf0]">
-              <AccordionTrigger className="py-5 text-base font-black text-[#1b3d57] hover:text-[#b8791d] sm:text-lg">{item.question}</AccordionTrigger>
-              <AccordionContent className="pb-5 text-sm font-medium leading-8 text-[#617b8c] sm:text-base">{item.answer}</AccordionContent>
-            </AccordionItem>
-          ))}
-        </Accordion>
       </div>
     </section>
   );

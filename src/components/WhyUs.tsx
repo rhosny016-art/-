@@ -1,54 +1,55 @@
-import { BarChart3, MapPinned, Radar, UsersRound } from "lucide-react";
-import { motion, useReducedMotion } from "framer-motion";
-import { SectionTitle } from "./SectionTitle";
+import { motion } from "framer-motion";
+import { ShieldCheck } from "lucide-react";
+import SectionHeading from "./SectionHeading";
+import { WHY_US } from "../data/content";
 
-const pillars = [
-  { icon: MapPinned, title: "خبرة في السوق المحلي", text: "نفهم سلوك عملائك في مصر والخليج ونحوّل البحث القريب إلى زيارة حقيقية." },
-  { icon: Radar, title: "ظهور في المكان الصحيح", text: "استراتيجية واضحة تضعك أمام العميل الجاهز للشراء وقت اتخاذ القرار." },
-  { icon: BarChart3, title: "قرارات مبنية على البيانات", text: "تقارير واضحة ومؤشرات مفهومة لتعرف بالضبط أين يذهب استثمارك." },
-  { icon: UsersRound, title: "شراكة تهتم بالنمو", text: "فريق مختص يرافقك من التخطيط وحتى تحقيق نتائج ملموسة." },
-];
-
-export function WhyUs() {
-  const reduceMotion = useReducedMotion();
+export default function WhyUs() {
   return (
-    <section id="why-us" className="relative z-10 -mt-9 overflow-hidden rounded-t-[2.5rem] bg-white py-20 sm:py-28" aria-labelledby="why-title">
-      <div className="absolute left-0 top-12 h-64 w-64 rounded-full bg-[#f8e5b3]/35 blur-3xl" aria-hidden="true" />
-      <div className="relative mx-auto max-w-6xl px-5">
-        <div id="why-title">
-          <SectionTitle
-            eyebrow="لماذا دلني؟"
-            title="لأن موقعك على الخريطة بداية الحكاية"
-            description="لا نكتفي بظهور أنيق. نبني حضوراً محلياً يلفت الانتباه ويقود إلى مكالمات وزيارات ومبيعات."
-          />
+    <section id="why-us" className="relative scroll-mt-20 overflow-hidden bg-slate-50/70 py-20 lg:py-28">
+      <div className="absolute top-10 right-[6%] h-72 w-72 rounded-full bg-brand-100/70 blur-[110px]" aria-hidden="true" />
+
+      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <SectionHeading
+          eyebrow="لماذا دلّني؟"
+          title="شريك نجاحك الحقيقي، لا مجرد مقدّم خدمة"
+          description="نتعامل مع كل مشروع كأنه استثمارنا الخاص — بشفافية كاملة، وبأعلى معايير الإتقان التقني والتسويقي."
+        />
+
+        <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {WHY_US.map((f, i) => {
+            const Icon = f.icon;
+            return (
+              <motion.div
+                key={f.title}
+                initial={{ opacity: 0, y: 28 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-60px" }}
+                transition={{ duration: 0.55, delay: i * 0.1 }}
+                className="group rounded-3xl border border-slate-200/80 bg-white p-7 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-brand-200 hover:shadow-[0_22px_45px_-18px_rgba(0,60,140,0.22)]"
+              >
+                <span className="flex h-13 w-13 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-600 to-brand-800 p-3.5 text-white shadow-lg shadow-brand-600/25 transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-3">
+                  <Icon className="h-6 w-6" aria-hidden="true" />
+                </span>
+                <h3 className="mt-5 text-lg font-black text-slate-900">{f.title}</h3>
+                <p className="mt-2.5 text-sm leading-8 font-medium text-slate-500">{f.text}</p>
+              </motion.div>
+            );
+          })}
         </div>
+
         <motion.div
-          className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4"
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.2 }}
-          variants={{
-            hidden: {},
-            visible: { transition: { staggerChildren: reduceMotion ? 0 : 0.1 } },
-          }}
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="mt-10 flex flex-col items-center justify-center gap-3 rounded-3xl border border-emerald-100 bg-emerald-50/70 px-6 py-6 text-center sm:flex-row sm:gap-4"
         >
-          {pillars.map(({ icon: Icon, title, text }) => (
-            <motion.article
-              key={title}
-              variants={{
-                hidden: { opacity: 0, y: reduceMotion ? 0 : 22 },
-                visible: { opacity: 1, y: 0, transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1] } },
-              }}
-              whileHover={reduceMotion ? undefined : { y: -6 }}
-              className="group rounded-3xl border border-[#e7edf0] bg-[#fbfcfd] p-6 shadow-[0_10px_28px_rgba(20,62,83,0.06)] transition-colors duration-300 hover:border-[#e3c27a] hover:shadow-[0_22px_44px_rgba(173,119,28,0.16),0_0_0_1px_rgba(227,194,122,0.4)]"
-            >
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#f9eed9] text-[#bd7b1e] shadow-[inset_0_1px_0_white] transition-transform duration-300 group-hover:scale-110">
-                <Icon className="h-6 w-6" />
-              </div>
-              <h3 className="mt-6 text-lg font-black text-[#173a56]">{title}</h3>
-              <p className="mt-3 text-sm font-medium leading-7 text-[#63798a]">{text}</p>
-            </motion.article>
-          ))}
+          <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-500 text-white shadow-md shadow-emerald-500/30">
+            <ShieldCheck className="h-5.5 w-5.5" aria-hidden="true" />
+          </span>
+          <p className="text-sm font-extrabold leading-7 text-emerald-800 sm:text-base">
+            استشارتك الأولى ومراجعة ملفك التجاري مجانية بالكامل — تقرير واضح بالوضع الحالي والفرص المتاحة، دون أي التزام.
+          </p>
         </motion.div>
       </div>
     </section>
