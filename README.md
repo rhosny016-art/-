@@ -1,73 +1,85 @@
-# React + TypeScript + Vite
+# دلّني — وكالة تسويق رقمي متكاملة
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+موقع تسويقي احترافي أحادي الصفحة (Landing Page) لوكالة "دلّني" للتسويق الرقمي، مُحسّن للإنتاج (Production-Ready) مع تركيز على الأداء وSEO والوصولية.
 
-Currently, two official plugins are available:
+## 🧱 التقنيات
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **React 19** + **TypeScript** (strict mode)
+- **Vite 7** — أداة البناء والتطوير
+- **Tailwind CSS v4** — التصميم
+- **Framer Motion** — الأنيميشن
+- **Lucide React** — الأيقونات
 
-## React Compiler
+## 🚀 التشغيل المحلي
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install      # تثبيت التبعيات
+npm run dev      # تشغيل خادم التطوير  →  http://localhost:5173
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## 📦 الأوامر المتاحة
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+| الأمر | الوظيفة |
+|---|---|
+| `npm run dev` | خادم التطوير مع HMR |
+| `npm run build` | فحص الأنواع + بناء الإنتاج إلى `dist/` |
+| `npm run typecheck` | فحص الأنواع فقط |
+| `npm run lint` | فحص ESLint |
+| `npm run preview` | معاينة بناء الإنتاج محليًا |
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## 🌐 النشر على Vercel
+
+المشروع مهيّأ بالكامل للنشر على Vercel عبر `vercel.json`:
+
+1. ارفع المستودع إلى GitHub.
+2. على [vercel.com](https://vercel.com) → **Add New Project** → اختر المستودع.
+3. سيكتشف Vercel تلقائيًا إطار Vite والإعدادات.
+4. اضغط **Deploy** — لا حاجة لأي إعدادات إضافية.
+
+### إعدادات مدمجة في `vercel.json`
+- **تخزين مؤقت طويل (1 سنة، immutable)** للأصول المجزّأة (`/assets/*`) والصور والخطوط.
+- **روابط نظيفة** (`cleanUrls`) بدون شرطة مائلة زائدة.
+- **رؤوس أمان**: `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`.
+- إصدار Node مثبّت عبر `.nvmrc` (Node 22).
+
+## ✨ المميزات
+
+- 🎨 **هوية بصرية متّسقة**: نظام ألوان موحّد (ذهبي/أزرق ليلي) + تأثيرات Glass/Grain.
+- 🌍 **دعم RTL كامل** للغة العربية.
+- ⚡ **أداء عالٍ**: صور AVIF/WebP مُحسّنة، خط Cairo مُحسّن، تقسيم كود.
+- 🔍 **SEO متقدم**: وسوم Open Graph + Twitter Cards + JSON-LD (Organization + FAQPage) + robots.txt.
+- ♿ **وصولية WCAG**: focus trap، focus-visible، دعم لوحة المفاتيح، `prefers-reduced-motion`.
+- 🛡️ **متانة**: Error Boundary يمنع الشاشة البيضاء.
+- 📱 **متجاوب بالكامل** مع جميع أحجام الشاشات.
+- 💬 **مساعد ذكي** (دَلّوب) يطابق الكلمات المفتاحية بالعربية.
+
+## 📁 بنية المشروع
+
 ```
+├── public/                 # أصول ثابتة (صور، favicon، robots.txt)
+├── src/
+│   ├── components/         # مكوّنات React
+│   │   ├── ErrorBoundary.tsx
+│   │   ├── Hero.tsx
+│   │   ├── Services.tsx
+│   │   ├── ServiceModal.tsx
+│   │   ├── Chatbot.tsx
+│   │   └── ...
+│   ├── data/
+│   │   └── content.ts      # كل محتوى الموقع (خدمات، آراء، أسئلة...)
+│   ├── lib/
+│   │   ├── site.ts         # إعدادات الموقع + دوال مساعدة
+│   │   ├── animations.ts   # أنيميشن مشترك
+│   │   └── useFocusTrap.ts # هوك الوصولية
+│   ├── App.tsx
+│   ├── main.tsx
+│   └── index.css
+├── index.html
+├── vercel.json
+├── .nvmrc
+└── vite.config.ts
+```
+
+## 🔒 الخصوصية
+
+لا يستخدم الموقع أي أدوات تتبّع خارجية أو كوكيز. التواصل يتم عبر روابط WhatsApp مباشرة.
