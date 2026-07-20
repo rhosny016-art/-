@@ -1,19 +1,29 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Clock, Menu, Phone, X } from "lucide-react";
 import Logo from "./Logo";
 import WhatsAppIcon from "./WhatsAppIcon";
 import { NAV_LINKS, SITE, WA_DEFAULT, scrollToSection } from "../lib/site";
+import { useFocusTrap } from "../lib/useFocusTrap";
 
 export default function Header() {
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState("hero");
+  const drawerRef = useRef<HTMLElement>(null);
+  useFocusTrap(drawerRef, open);
 
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
     return () => {
       document.body.style.overflow = "";
     };
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
   }, [open]);
 
   // track which section is in view to highlight its nav link
@@ -107,6 +117,7 @@ export default function Header() {
               className="fixed inset-0 z-[60] bg-slate-950/50 backdrop-blur-sm lg:hidden"
             />
             <motion.aside
+              ref={drawerRef}
               initial={{ x: "100%" }}
               animate={{ x: 0 }}
               exit={{ x: "100%" }}

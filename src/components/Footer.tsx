@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Clock, Facebook, Instagram, Linkedin, Mail, MapPin, Phone, X } from "lucide-react";
 import Logo from "./Logo";
 import { NAV_LINKS, SITE, scrollToSection } from "../lib/site";
 import { SERVICES } from "../data/content";
+import { useFocusTrap } from "../lib/useFocusTrap";
 
 const LEGAL_DOCS: Record<string, { title: string; body: string[] }> = {
   privacy: {
@@ -27,6 +28,8 @@ const LEGAL_DOCS: Record<string, { title: string; body: string[] }> = {
 
 export default function Footer() {
   const [doc, setDoc] = useState<string | null>(null);
+  const legalRef = useRef<HTMLDivElement>(null);
+  useFocusTrap(legalRef, !!doc);
   const year = new Date().getFullYear();
 
   return (
@@ -161,6 +164,7 @@ export default function Footer() {
             aria-label={LEGAL_DOCS[doc].title}
           >
             <motion.div
+              ref={legalRef}
               initial={{ y: 40, opacity: 0, scale: 0.97 }}
               animate={{ y: 0, opacity: 1, scale: 1 }}
               exit={{ y: 40, opacity: 0, scale: 0.97 }}

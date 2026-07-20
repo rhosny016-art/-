@@ -4,6 +4,7 @@ import { ArrowLeft, CheckCircle2 } from "lucide-react";
 import SectionHeading from "./SectionHeading";
 import ServiceModal from "./ServiceModal";
 import { SERVICES, type Service } from "../data/content";
+import { scrollToSection } from "../lib/site";
 
 export default function Services() {
   const [active, setActive] = useState<Service | null>(null);
@@ -99,7 +100,7 @@ export default function Services() {
               </p>
             </div>
             <button
-              onClick={() => document.getElementById("cta")?.scrollIntoView({ behavior: "smooth" })}
+              onClick={() => scrollToSection("cta")}
               className="relative inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-sm font-extrabold text-night-950 transition-all duration-300 hover:bg-brand-50 active:scale-95"
             >
               تحدّث معنا الآن

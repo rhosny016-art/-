@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   BadgeCheck,
@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import WhatsAppIcon from "./WhatsAppIcon";
 import { waPackage, waService } from "../lib/site";
+import { useFocusTrap } from "../lib/useFocusTrap";
 import type { Service } from "../data/content";
 
 interface ServiceModalProps {
@@ -19,6 +20,9 @@ interface ServiceModalProps {
 }
 
 export default function ServiceModal({ service, onClose }: ServiceModalProps) {
+  const panelRef = useRef<HTMLDivElement>(null);
+  useFocusTrap(panelRef, !!service);
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
     window.addEventListener("keydown", onKey);
@@ -46,6 +50,7 @@ export default function ServiceModal({ service, onClose }: ServiceModalProps) {
           aria-label={service.title}
         >
           <motion.div
+            ref={panelRef}
             initial={{ y: 60, opacity: 0, scale: 0.98 }}
             animate={{ y: 0, opacity: 1, scale: 1 }}
             exit={{ y: 60, opacity: 0, scale: 0.98 }}

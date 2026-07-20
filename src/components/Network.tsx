@@ -111,12 +111,8 @@ export default function Network() {
               const isSel = selected.id === b.id;
               return (
                 <g
-                  key={b.id}
+                  key={`vis-${b.id}`}
                   transform={`translate(${b.x} ${b.y})`}
-                  onClick={() => setSelected(b)}
-                  className="cursor-pointer"
-                  role="button"
-                  aria-label={`فرع ${b.city}`}
                 >
                   <circle r={b.hq ? 6 : 4.5} fill="transparent" />
                   <circle
@@ -157,6 +153,35 @@ export default function Network() {
                 </g>
               );
             })}
+
+            {/* Keyboard-accessible branch buttons overlaid on SVG */}
+            {BRANCHES.map((b) => (
+              <foreignObject
+                key={`btn-${b.id}`}
+                x={b.x - 8}
+                y={b.y - 10}
+                width={16}
+                height={b.hq ? 22 : 16}
+                style={{ pointerEvents: "none" }}
+              >
+                <button
+                  onClick={() => setSelected(b)}
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    width: "100%",
+                    height: "100%",
+                    background: "transparent",
+                    border: "none",
+                    padding: 0,
+                    cursor: "pointer",
+                    pointerEvents: "auto",
+                  }}
+                  aria-label={`فرع ${b.city}، ${b.country}`}
+                  aria-pressed={selected.id === b.id}
+                />
+              </foreignObject>
+            ))}
           </svg>
 
           {/* selected branch info */}

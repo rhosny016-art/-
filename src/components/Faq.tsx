@@ -33,6 +33,8 @@ export default function Faq() {
                 <button
                   onClick={() => setOpen(isOpen ? null : i)}
                   aria-expanded={isOpen}
+                  aria-controls={`faq-answer-${i}`}
+                  id={`faq-btn-${i}`}
                   className="flex w-full items-center justify-between gap-4 px-6 py-5 text-start"
                 >
                   <span className={`text-[15px] font-black leading-8 sm:text-base ${isOpen ? "text-brand-700" : "text-slate-800"}`}>
@@ -49,6 +51,9 @@ export default function Faq() {
                 <AnimatePresence initial={false}>
                   {isOpen && (
                     <motion.div
+                      id={`faq-answer-${i}`}
+                      role="region"
+                      aria-labelledby={`faq-btn-${i}`}
                       initial={{ height: 0, opacity: 0 }}
                       animate={{ height: "auto", opacity: 1 }}
                       exit={{ height: 0, opacity: 0 }}

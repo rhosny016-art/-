@@ -11,12 +11,14 @@ import CtaSection from "./components/CtaSection";
 import Footer from "./components/Footer";
 import FloatingButtons from "./components/FloatingButtons";
 import Chatbot from "./components/Chatbot";
+import ErrorBoundary from "./components/ErrorBoundary";
 
 export default function App() {
   return (
+    <ErrorBoundary>
     <div dir="rtl" className="min-h-screen bg-white font-sans text-slate-800">
       <Header />
-      <main>
+      <main id="main-content">
         <Hero />
         <Stats />
         <Services />
@@ -31,5 +33,6 @@ export default function App() {
       <FloatingButtons />
       <Chatbot />
     </div>
+    </ErrorBoundary>
   );
 }
