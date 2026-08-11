@@ -1,198 +1,177 @@
-import { useRef, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
-import { Clock, Facebook, Instagram, Linkedin, Mail, MapPin, Phone, X } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { Clock, Mail, MapPin, Phone, ArrowUp, Star } from "lucide-react";
 import Logo from "./Logo";
-import { NAV_LINKS, SITE, scrollToSection } from "../lib/site";
-import { SERVICES } from "../data/content";
-import { useFocusTrap } from "../lib/useFocusTrap";
+import { getSiteSettings } from "@/lib/store";
+import { DEFAULT_SETTINGS } from "@/lib/siteData";
+import { buildWhatsAppLink } from "@/lib/whatsapp";
+import WhatsAppIcon from "./WhatsAppIcon";
 
-const LEGAL_DOCS: Record<string, { title: string; body: string[] }> = {
-  privacy: {
-    title: "سياسة الخصوصية",
-    body: [
-      "نحترم خصوصيتك احتراماً كاملاً. أي بيانات تشاركها معنا — مثل اسمك أو رقم هاتفك أو بيانات نشاطك التجاري — تُستخدم حصرياً لتقديم خدماتنا التسويقية المتفق عليها، ولا تُباع ولا تُشارك مع أي طرف ثالث لأغراض إعلانية.",
-      "قد نستخدم أدوات تحليل معتمدة (مثل Google Analytics) لفهم أداء حملاتك وتحسينها، وتظل ملكية جميع البيانات والحسابات الإعلانية لك وحدك في كل الأوقات.",
-      "يمكنك في أي وقت طلب الاطلاع على بياناتك أو تصحيحها أو حذفها نهائياً بالتواصل معنا عبر البريد hello@dalni.agency، وسننفذ طلبك خلال 7 أيام عمل كحد أقصى.",
-    ],
-  },
-  terms: {
-    title: "الشروط والأحكام",
-    body: [
-      "تبدأ أي خدمة بعد الاتفاق الكتابي الواضح على نطاق العمل والمدة والتكلفة، ويُعتد بما يرد في عرض السعر المرسل إليك كمرجع نهائي للطرفين.",
-      "نلتزم بتطبيق أفضل الممارسات المهنية المعتمدة في إدارة الملفات التجارية والحملات الإعلانية، ونشاركك تقارير أداء دورية شفافة. ونظراً لطبيعة المنصات الإعلانية ومحركات البحث، لا يمكن ضمان ترتيب أو نتيجة رقمية محددة بعينها.",
-      "المدفوعات تُسدد مقدماً بحسب الباقة المختارة، ويمكن إيقاف الخدمات الشهرية أو تجديدها بإشعار قبل نهاية الدورة الجارية بـ7 أيام على الأقل. الميزانية الإعلانية المدفوعة للمنصات غير مستردة بعد إنفاقها.",
-      "تظل جميع الحسابات الإعلانية والملفات التجارية والمحتوى المنتج أثناء التعاقد ملكاً لعميلنا، ونسلّمها كاملة عند انتهاء التعاون.",
-    ],
-  },
-};
+const FacebookIcon = ({ className = "w-4 h-4" }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+  </svg>
+);
+
+const InstagramIcon = ({ className = "w-4 h-4" }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
+  </svg>
+);
+
+const LinkedinIcon = ({ className = "w-4 h-4" }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.225 0z" />
+  </svg>
+);
+
+const QUICK_LINKS = [
+  { to: "/", label: "الرئيسية" },
+  { to: "/services", label: "خدماتنا" },
+  { to: "/about", label: "من نحن" },
+];
+
+const SERVICE_LINKS = [
+  "إنشاء نشاط على خرائط Google",
+  "تحسين الظهور المحلي",
+  "حملات Google Ads",
+  "إعلانات وسائل التواصل",
+  "كتابة التعليقات والمراجعات",
+];
 
 export default function Footer() {
-  const [doc, setDoc] = useState<string | null>(null);
-  const legalRef = useRef<HTMLDivElement>(null);
-  useFocusTrap(legalRef, !!doc);
-  const year = new Date().getFullYear();
+  const [s, setS] = useState(DEFAULT_SETTINGS);
+  useEffect(() => {
+    getSiteSettings().then(setS);
+  }, []);
+
+  const scrollTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
 
   return (
-    <footer id="contact" className="relative scroll-mt-20 overflow-hidden bg-night-950 pt-16 text-slate-300">
-      <div className="absolute -top-24 left-1/3 h-64 w-64 rounded-full bg-brand-600/15 blur-[110px]" aria-hidden="true" />
+    <footer className="relative bg-night-950 text-slate-300/80 border-t border-white/6 overflow-hidden">
+      <div className="absolute inset-0 bg-night-grid opacity-40" aria-hidden="true" />
+      <div className="absolute -top-32 left-1/3 w-[500px] h-[500px] rounded-full bg-brass-500/6 blur-[140px] pointer-events-none" aria-hidden="true" />
+      <div className="absolute bottom-0 right-1/4 w-[400px] h-[400px] rounded-full bg-night-600/25 blur-[120px] pointer-events-none" aria-hidden="true" />
 
-      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="grid gap-12 pb-12 md:grid-cols-2 lg:grid-cols-[1.3fr_0.8fr_1fr_1fr]">
-          {/* brand */}
-          <div>
-            <Logo light />
-            <p className="mt-5 max-w-sm text-sm leading-8 font-medium text-slate-400">
-              وكالة تسويق رقمي متخصصة في وضع الأنشطة التجارية على خريطة النجاح —
-              من خرائط Google إلى الحملات الإعلانية وبناء السمعة الرقمية.
-            </p>
-            <div className="mt-6 flex gap-3">
-              {[
-                { icon: Facebook, href: SITE.social.facebook, label: "فيسبوك" },
-                { icon: Instagram, href: SITE.social.instagram, label: "إنستجرام" },
-                { icon: Linkedin, href: SITE.social.linkedin, label: "لينكدإن" },
-              ].map((s) => (
-                <a
-                  key={s.label}
-                  href={s.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={s.label}
-                  className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-slate-300 transition-all duration-300 hover:scale-110 hover:border-brand-500 hover:bg-brand-600 hover:text-white"
-                >
-                  <s.icon className="h-4.5 w-4.5" aria-hidden="true" />
-                </a>
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 md:pt-20 pb-10 grid gap-12 md:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1.2fr]">
+        <div>
+          <Logo light animated={false} size={38} />
+          <p className="mt-5 text-sm leading-relaxed text-slate-400 font-medium max-w-sm">{s.footer_text}</p>
+
+          <div className="flex items-center gap-2 mt-5 text-sm font-bold text-white">
+            <span className="flex text-brass-400" aria-hidden="true">
+              {[...Array(5)].map((_, i) => (
+                <Star key={i} className="w-4 h-4 fill-brass-400" />
               ))}
-            </div>
+            </span>
+            <span className="font-display">4.9</span>
+            <span className="text-slate-400 font-medium text-xs">تقييم عملائنا على Google</span>
           </div>
 
-          {/* quick links */}
-          <div>
-            <h4 className="text-base font-black text-white">روابط سريعة</h4>
-            <ul className="mt-5 space-y-3 text-sm font-bold">
-              {NAV_LINKS.map((l) => (
-                <li key={l.id}>
-                  <button
-                    onClick={() => scrollToSection(l.id)}
-                    className="text-slate-400 transition-all duration-200 hover:-translate-x-1 hover:text-white"
-                  >
-                    {l.label}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* services */}
-          <div>
-            <h4 className="text-base font-black text-white">خدماتنا</h4>
-            <ul className="mt-5 space-y-3 text-sm font-bold">
-              {SERVICES.map((s) => (
-                <li key={s.id}>
-                  <button
-                    onClick={() => scrollToSection("services")}
-                    className="text-slate-400 transition-all duration-200 hover:-translate-x-1 hover:text-white"
-                  >
-                    {s.shortTitle}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* contact */}
-          <div>
-            <h4 className="text-base font-black text-white">تواصل معنا</h4>
-            <ul className="mt-5 space-y-4 text-sm font-bold">
-              <li>
-                <a href={`tel:+${SITE.phoneIntl}`} className="flex items-center gap-3 text-slate-400 transition hover:text-white">
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/5 text-brand-300">
-                    <Phone className="h-4 w-4" />
-                  </span>
-                  <span className="ltr-nums">{SITE.phoneDisplay}</span>
-                </a>
-              </li>
-              <li>
-                <a href={`mailto:${SITE.email}`} className="flex items-center gap-3 text-slate-400 transition hover:text-white">
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/5 text-brand-300">
-                    <Mail className="h-4 w-4" />
-                  </span>
-                  <span dir="ltr">{SITE.email}</span>
-                </a>
-              </li>
-              <li className="flex items-center gap-3 text-slate-400">
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/5 text-brand-300">
-                  <MapPin className="h-4 w-4" />
-                </span>
-                {SITE.address}
-              </li>
-              <li className="flex items-center gap-3 text-slate-400">
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/5 text-brand-300">
-                  <Clock className="h-4 w-4" />
-                </span>
-                {SITE.workingHours}
-              </li>
-            </ul>
+          <div className="flex gap-3 mt-6">
+            {[
+              { href: s.social_facebook, Icon: FacebookIcon, label: "فيسبوك" },
+              { href: s.social_instagram, Icon: InstagramIcon, label: "إنستجرام" },
+              { href: s.social_linkedin, Icon: LinkedinIcon, label: "لينكدإن" },
+            ].map(({ href, Icon, label }) => (
+              <a
+                key={label}
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={label}
+                className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-slate-300 border border-white/8 hover:bg-gradient-to-br hover:from-brass-500 hover:to-brass-600 hover:text-night-950 hover:border-brass-500 hover:-translate-y-1 hover:shadow-[0_10px_24px_-8px_rgba(237,155,47,0.6)] transition-all duration-300"
+              >
+                <Icon />
+              </a>
+            ))}
           </div>
         </div>
 
-        <div className="flex flex-col items-center justify-between gap-4 border-t border-white/10 py-6 text-xs font-bold text-slate-500 sm:flex-row">
-          <p>
-            © {year} وكالة دلّني للتسويق الرقمي — جميع الحقوق محفوظة.
-          </p>
-          <div className="flex gap-6">
-            <button onClick={() => setDoc("privacy")} className="transition-colors hover:text-white">
-              سياسة الخصوصية
-            </button>
-            <button onClick={() => setDoc("terms")} className="transition-colors hover:text-white">
-              الشروط والأحكام
+        <div>
+          <h4 className="text-white font-extrabold mb-5 text-base">روابط سريعة</h4>
+          <ul className="space-y-3 text-sm">
+            {QUICK_LINKS.map((l) => (
+              <li key={l.to}>
+                <Link
+                  to={l.to}
+                  className="group inline-flex items-center gap-2 text-slate-400 hover:text-brass-300 transition-all duration-200"
+                >
+                  <span className="w-1 h-1 rounded-full bg-brass-500/40 group-hover:bg-brass-400 group-hover:scale-150 transition-all" />
+                  {l.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div>
+          <h4 className="text-white font-extrabold mb-5 text-base">خدماتنا</h4>
+          <ul className="space-y-3 text-sm">
+            {SERVICE_LINKS.map((label) => (
+              <li key={label}>
+                <Link
+                  to="/services"
+                  className="group inline-flex items-center gap-2 text-slate-400 hover:text-brass-300 transition-all duration-200"
+                >
+                  <span className="w-1 h-1 rounded-full bg-brass-500/40 group-hover:bg-brass-400 group-hover:scale-150 transition-all" />
+                  {label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div>
+          <h4 className="text-white font-extrabold mb-5 text-base">تواصل معنا</h4>
+          <ul className="space-y-4 text-sm">
+            <li className="flex items-start gap-3 text-slate-400">
+              <MapPin className="w-4.5 h-4.5 text-brass-400 mt-0.5 shrink-0" aria-hidden="true" />
+              <span>{s.address}</span>
+            </li>
+            <li className="flex items-start gap-3 text-slate-400">
+              <Phone className="w-4.5 h-4.5 text-brass-400 mt-0.5 shrink-0" aria-hidden="true" />
+              <span dir="ltr">{s.phone}</span>
+            </li>
+            <li className="flex items-start gap-3 text-slate-400">
+              <Mail className="w-4.5 h-4.5 text-brass-400 mt-0.5 shrink-0" aria-hidden="true" />
+              <span dir="ltr">{s.email}</span>
+            </li>
+            <li className="flex items-start gap-3 text-slate-400">
+              <Clock className="w-4.5 h-4.5 text-brass-400 mt-0.5 shrink-0" aria-hidden="true" />
+              <span>{s.working_hours}</span>
+            </li>
+          </ul>
+          <a
+            href={buildWhatsAppLink("مرحباً، أريد الاستفسار عن خدماتكم 🙏")}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-6 inline-flex items-center gap-2.5 rounded-full bg-mint-500/12 border border-mint-500/30 text-mint-400 px-5 py-2.5 text-sm font-bold hover:bg-mint-500/20 transition-colors"
+          >
+            <WhatsAppIcon className="w-4 h-4" />
+            راسلنا واتساب الآن
+          </a>
+        </div>
+      </div>
+
+      <div className="relative border-t border-white/6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+          <span>© 2026 دلّني — جميع الحقوق محفوظة</span>
+          <div className="flex flex-wrap items-center justify-center gap-5">
+            <Link to="/about" className="hover:text-brass-300 transition-colors">من نحن</Link>
+            <Link to="/dashboard/login" className="hover:text-brass-300 transition-colors">لوحة التحكم</Link>
+            <button
+              type="button"
+              onClick={scrollTop}
+              aria-label="العودة إلى الأعلى"
+              className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3.5 py-1.5 font-bold text-slate-300 hover:text-white hover:border-brass-500/40 hover:-translate-y-0.5 transition-all"
+            >
+              العودة للأعلى
+              <ArrowUp className="w-3.5 h-3.5" aria-hidden="true" />
             </button>
           </div>
         </div>
       </div>
-
-      {/* legal modal */}
-      <AnimatePresence>
-        {doc && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm"
-            onClick={() => setDoc(null)}
-            role="dialog"
-            aria-modal="true"
-            aria-label={LEGAL_DOCS[doc].title}
-          >
-            <motion.div
-              ref={legalRef}
-              initial={{ y: 40, opacity: 0, scale: 0.97 }}
-              animate={{ y: 0, opacity: 1, scale: 1 }}
-              exit={{ y: 40, opacity: 0, scale: 0.97 }}
-              transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              onClick={(e) => e.stopPropagation()}
-              className="thin-scroll max-h-[80vh] w-full max-w-lg overflow-y-auto rounded-3xl bg-white p-8 text-slate-700 shadow-2xl"
-            >
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-black text-slate-900">{LEGAL_DOCS[doc].title}</h3>
-                <button
-                  onClick={() => setDoc(null)}
-                  aria-label="إغلاق"
-                  className="flex h-9 w-9 items-center justify-center rounded-xl text-slate-500 transition hover:bg-slate-100"
-                >
-                  <X className="h-4.5 w-4.5" />
-                </button>
-              </div>
-              <div className="mt-5 space-y-4">
-                {LEGAL_DOCS[doc].body.map((p, i) => (
-                  <p key={i} className="text-sm leading-8 font-medium text-slate-600">
-                    {p}
-                  </p>
-                ))}
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </footer>
   );
 }
