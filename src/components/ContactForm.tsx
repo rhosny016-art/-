@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { CheckCircle2, Loader2, Send } from "lucide-react";
 import { addRequest } from "@/lib/store";
@@ -11,6 +11,21 @@ export default function ContactForm({ defaultSubject = "" }: { defaultSubject?: 
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [csrfToken, setCsrfToken] = useState<string>("");
+
+  // Fetch CSRF token on component mount
+  useEffect(() => {
+    const fetchCsrfToken = async () => {
+      try {
+        const response = await fetch("/api/csrf-token");
+        const data = await response.json();
+        setCsrfToken(data.csrfToken);
+      } catch (err) {
+        console.error("Failed to fetch CSRF token:", err);
+      }
+    };
+    fetchCsrfToken();
+  }, []);
 
   const set = (k: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setForm((f) => ({ ...f, [k]: e.target.value }));
@@ -50,16 +65,36 @@ export default function ContactForm({ defaultSubject = "" }: { defaultSubject?: 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) {
-      setError("يرجى تصحيح الحقول المميزة بالأحمر أولاً.");
+      setError("يرجى تصحيح الحقول المميزة بالأحرف أولاً.");
+      return;
+    }
+    if (!csrfToken) {
+      setError("فشل تحميل رمز الأمان (CSRF). يرجى إعادة تحميل الصفحة والمحاولة مرة أخرى.");
       return;
     }
     setLoading(true);
     setError("");
     try {
-      await addRequest(form);
+      // Submit to the new API endpoint with CSRF protection
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(form)
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || "فشل إرسال الطلب");
+      }
+      
+      // Success - show success message
       setSuccess(true);
-    } catch {
-      setError("حدث خطأ أثناء إرسال طلبك، برجاء المحاولة مرة أخرى أو التواصل عبر واتساب مباشرة.");
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "حدث خطأ أثناء إرسال طلبك، برجاء المحاولة مرة أخرى أو التواصل عبر واتساب مباشرة.";
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }

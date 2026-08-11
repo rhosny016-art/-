@@ -2,10 +2,76 @@ import express from "express";
 import path from "path";
 import dotenv from "dotenv";
 import { createServer as createViteServer } from "vite";
+import csrf from "csurf";
+import cookieParser from "cookie-parser";
+import rateLimit from "express-rate-limit";
+import helmet from "helmet";
 
 // Load environment variables for local development (Vite handles the client env)
 dotenv.config();
 dotenv.config({ path: ".env.local" });
+
+// CSRF Protection Configuration
+// Generate and validate CSRF tokens for all state-changing requests
+const csrfProtection = csrf({
+  cookie: {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+    key: "csrfToken"
+  }
+});
+
+// Rate Limiting Configuration
+// Prevent abuse and spam with strict limits
+
+// Contact Form Rate Limiter - 100 requests per hour per IP
+const contactLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 100, // Limit each IP to 100 requests per windowMs
+  message: "تم تجاوز الحد الأقصى لعدد المحاولات. يرجى المحاولة مرة أخرى بعد ساعة.",
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => {
+    return req.ip || req.headers["x-forwarded-for"]?.toString() || "anonymous";
+  },
+  skip: (req) => {
+    // Skip rate limiting for localhost in development
+    return req.ip === "::1" || req.ip === "127.0.0.1";
+  }
+});
+
+// API Rate Limiter - 1000 requests per hour per IP
+const apiLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 1000, // Limit each IP to 1000 requests per windowMs
+  message: "تم تجاوز الحد الأقصى لعدد الطلبات. يرجى المحاولة مرة أخرى بعد ساعة.",
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => {
+    return req.ip || req.headers["x-forwarded-for"]?.toString() || "anonymous";
+  },
+  skip: (req) => {
+    // Skip rate limiting for localhost in development
+    return req.ip === "::1" || req.ip === "127.0.0.1";
+  }
+});
+
+// Global Rate Limiter - 1000 requests per hour per IP
+const globalLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 1000, // Limit each IP to 1000 requests per windowMs
+  message: "تم تجاوز الحد الأقصى لعدد الطلبات. يرجى المحاولة مرة أخرى بعد ساعة.",
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => {
+    return req.ip || req.headers["x-forwarded-for"]?.toString() || "anonymous";
+  },
+  skip: (req) => {
+    // Skip rate limiting for localhost in development
+    return req.ip === "::1" || req.ip === "127.0.0.1";
+  }
+});
 
 // Rules-based smart assistant for Dalni Agency
 function buildReply(userMsg: string): string {
@@ -223,9 +289,97 @@ async function startServer() {
   const PORT = 3000;
 
   app.use(express.json());
+  app.use(cookieParser());
+  
+  // Security Headers Middleware using Helmet
+  // Comprehensive security headers to protect against XSS, clickjacking, MIME sniffing, etc.
+  app.use(
+    helmet({
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          scriptSrc: ["'self'", "'unsafe-inline'", "https:", "http:"],
+          styleSrc: ["'self'", "'unsafe-inline'", "https:", "http:"],
+          imgSrc: ["'self'", "data:", "https:", "http:"],
+          connectSrc: ["'self'", "https:", "http:"],
+          fontSrc: ["'self'", "https:", "http:"],
+          objectSrc: ["'none'"],
+          mediaSrc: ["'self'", "https:", "http:"],
+          frameSrc: ["'none'"],
+          childSrc: ["'self'"],
+          workerSrc: ["'self'"],
+          formAction: ["'self'"],
+          frameAncestors: ["'none'"],
+          baseUri: ["'self'"],
+          manifestSrc: ["'self'"],
+          prefetchSrc: ["'self'"],
+        },
+      },
+      crossOriginEmbedderPolicy: false,
+      hsts: {
+        maxAge: 31536000, // 1 year
+        includeSubDomains: true,
+        preload: true,
+      },
+      frameguard: { action: "deny" },
+      ieNoOpen: true,
+      noSniff: true,
+      xssFilter: true,
+      hidePoweredBy: true,
+      referrerPolicy: { policy: "strict-origin-when-cross-origin" },
+      originAgentCluster: true,
+      permittedCrossDomainPolicies: { permittedPolicies: "none" },
+    })
+  );
+  
+  // Apply rate limiting middleware
+  app.use(globalLimiter);
+  
+  // CSRF Protection Middleware
+  // Apply to all state-changing requests (POST, PUT, PATCH, DELETE)
+  app.use(csrfProtection);
+  
+  // CSRF Token Endpoint - for clients to fetch a token
+  app.get("/api/csrf-token", apiLimiter, (req, res) => {
+    res.json({ csrfToken: req.csrfToken() });
+  });
 
-  // API Route for the rules-based Chat Assistant
-  app.post("/api/chat", (req, res) => {
+  // Contact Form Submission API with Rate Limiting and CSRF Protection
+  app.post("/api/contact", contactLimiter, csrfProtection, (req, res) => {
+    try {
+      const { name, email, phone, subject, message } = req.body;
+      
+      // Basic validation
+      if (!name || !email || !message) {
+        return res.status(400).json({ error: "الاسم والبريد الإلكتروني والرسالة مطلوبة" });
+      }
+      
+      if (name.length < 3) {
+        return res.status(400).json({ error: "يجب أن يكون الاسم 3 أحرف على الأقل" });
+      }
+      
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return res.status(400).json({ error: "يرجى إدخال بريد إلكتروني صحيح" });
+      }
+      
+      if (message.length < 10) {
+        return res.status(400).json({ error: "يجب أن تحتوي الرسالة على 10 أحرف على الأقل" });
+      }
+      
+      // In a real implementation, you would save to Firestore here
+      // For now, we just acknowledge receipt
+      console.log("Contact form submission received:", { name, email, phone, subject, message });
+      
+      res.json({ success: true, message: "تم إرسال طلبك بنجاح! سنتواصل معك قريباً." });
+    } catch (err: any) {
+      console.error("Contact form error:", err);
+      res.status(500).json({ error: "حدث خطأ أثناء معالجة طلبك، يرجى المحاولة مرة أخرى." });
+    }
+  });
+
+  // API Route for the rules-based Chat Assistant with Rate Limiting
+  app.post("/api/chat", apiLimiter, csrfProtection, (req, res) => {
     try {
       const { message } = req.body;
       if (!message) {

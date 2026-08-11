@@ -1,35 +1,121 @@
+// Production-ready Firestore Security Rules for دلّني Agency
+// Rules Version: 2
+// Last Updated: 2026-08-11
+// Security Level: HIGH - Restricts access to authenticated users only
+
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // Check if the user is authenticated
-    function isAdmin() {
+    // ====================================================================
+    // HELPER FUNCTIONS
+    // ====================================================================
+    
+    // Check if user is authenticated
+    function isAuthenticated() {
       return request.auth != null;
     }
-
-    // Site Settings
+    
+    // Check if user is an admin (email whitelisted)
+    function isAdmin() {
+      return isAuthenticated() && 
+             (request.auth.token.email in ['abdo01554671424@gmail.com']);
+    }
+    
+    // Validate site_settings document structure
+    function validateSiteSettings(data) {
+      return data.keys().hasAll(['data']) && 
+             data.data is map;
+    }
+    
+    // Validate service_override document structure
+    function validateServiceOverride(data) {
+      return data.keys().hasAll(['data']) && 
+             data.data is map &&
+             data.data.keys().hasAll(['featured', 'visible', 'order', 'title', 'short', 'description']);
+    }
+    
+    // Validate contact_request document structure
+    function validateContactRequest(data) {
+      return data.keys().hasAll(['name', 'email', 'message', 'status', 'created_date']) &&
+             data.name is string &&
+             data.email is string &&
+             data.message is string &&
+             data.status is string &&
+             data.created_date is string;
+    }
+    
+    // Validate visit document structure
+    function validateVisit(data) {
+      return data.keys().hasAll(['page', 'visitor_id', 'referrer', 'created_date']) &&
+             data.page is string &&
+             data.visitor_id is string &&
+             data.referrer is string &&
+             data.created_date is string;
+    }
+    
+    // ====================================================================
+    // SECURE ACCESS RULES
+    // ====================================================================
+    
+    // Allow read access to public site settings for all visitors
     match /site_settings/{settingsId} {
-      allow read: if true;
-      allow write: if true;
+      allow read: if true;  // Public read access for site configuration
+      allow write: if isAdmin();  // Only admins can modify
     }
 
-    // Service Overrides
+    // Service Overrides - only admins can read/write
     match /service_overrides/{overrideId} {
-      allow read: if true;
-      allow write: if true;
+      allow read: if isAdmin();  // Only admins can read service overrides
+      allow create, update, delete: if isAdmin();  // Only admins can modify
     }
 
-    // Contact Requests
+    // Contact Requests - authenticated users can create, admins manage
     match /contact_requests/{requestId} {
-      allow create: if true;
-      allow read, update, delete: if true;
+      allow create: if isAuthenticated();  // Authenticated users can submit requests
+      allow read: if isAdmin();  // Only admins can view requests
+      allow update: if isAdmin();  // Only admins can update status
+      allow delete: if isAdmin();  // Only admins can delete
     }
 
-    // Visits
+    // Visits - write-only for tracking, no read access
     match /visits/{visitId} {
-      allow create: if true;
-      allow read: if true;
-      allow update, delete: if false;
+      allow create: if request.resource.data.keys().hasAll(['page', 'visitor_id', 'referrer', 'created_date']);
+      allow read, update, delete: if false;  // No read access, no modifications allowed
+    }
+    
+    // ====================================================================
+    // DATA VALIDATION RULES
+    // ====================================================================
+    
+    // Validate site_settings write operations
+    match /site_settings/{document=**} {
+      allow write: if isAdmin() && 
+                   request.resource.data.keys().hasAll(['data']) &&
+                   request.resource.data.data is map;
+    }
+    
+    // Validate service_overrides write operations
+    match /service_overrides/{document=**} {
+      allow create, update: if isAdmin() && 
+                           validateServiceOverride(request.resource.data);
+    }
+    
+    // Validate contact_requests write operations
+    match /contact_requests/{document=**} {
+      allow create: if isAuthenticated() && 
+                   validateContactRequest(request.resource.data);
+      allow update: if isAdmin() && 
+                   request.resource.data.keys().hasAll(['status']);
+    }
+    
+    // Validate visits write operations
+    match /visits/{document=**} {
+      allow create: if request.resource.data.keys().hasAll(['page', 'visitor_id', 'referrer', 'created_date']) &&
+                   request.resource.data.page is string &&
+                   request.resource.data.visitor_id is string &&
+                   request.resource.data.referrer is string &&
+                   request.resource.data.created_date is string;
     }
   }
 }

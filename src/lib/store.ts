@@ -14,6 +14,109 @@ import {
 } from "firebase/firestore";
 import { signInWithPopup, signOut } from "firebase/auth";
 
+// ============================================================================
+// INPUT VALIDATION & SANITIZATION UTILITIES
+// ============================================================================
+
+// Sanitize string input - remove potentially harmful characters
+function sanitizeString(input: string): string {
+  if (typeof input !== "string") return "";
+  // Remove script tags and other potentially harmful content
+  return input
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
+    .replace(/<[^>]*>/g, "") // Remove all HTML tags
+    .trim();
+}
+
+// Validate email format
+function validateEmail(email: string): boolean {
+  if (typeof email !== "string") return false;
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email.trim());
+}
+
+// Validate name (minimum length and no special chars that could be problematic)
+function validateName(name: string): boolean {
+  if (typeof name !== "string") return false;
+  const trimmed = name.trim();
+  return trimmed.length >= 3 && trimmed.length <= 100;
+}
+
+// Validate phone number (optional field)
+function validatePhone(phone?: string): boolean {
+  if (!phone || typeof phone !== "string") return true; // Optional field
+  const trimmed = phone.trim();
+  // Allow various phone number formats: digits, +, -, spaces, parentheses
+  const phoneRegex = /^[\d+\-\s()]{8,20}$/;
+  return phoneRegex.test(trimmed);
+}
+
+// Validate message content
+function validateMessage(message: string): boolean {
+  if (typeof message !== "string") return false;
+  const trimmed = message.trim();
+  return trimmed.length >= 10 && trimmed.length <= 2000;
+}
+
+// Sanitize and validate contact request data
+function sanitizeAndValidateContactRequest(data: Omit<ContactRequest, "id" | "status" | "created_date">): Omit<ContactRequest, "id" | "status" | "created_date"> | null {
+  const name = sanitizeString(data.name);
+  const email = sanitizeString(data.email);
+  const phone = data.phone ? sanitizeString(data.phone) : undefined;
+  const subject = data.subject ? sanitizeString(data.subject) : "";
+  const message = sanitizeString(data.message);
+  
+  if (!validateName(name)) {
+    throw new Error("الاسم يجب أن يكون 3 أحرف على الأقل");
+  }
+  
+  if (!validateEmail(email)) {
+    throw new Error("البريد الإلكتروني غير صالح");
+  }
+  
+  if (phone && !validatePhone(phone)) {
+    throw new Error("رقم الهاتف غير صالح");
+  }
+  
+  if (!validateMessage(message)) {
+    throw new Error("يجب أن تحتوي الرسالة على 10 أحرف على الأقل");
+  }
+  
+  return {
+    name,
+    email,
+    phone,
+    subject,
+    message
+  };
+}
+
+// Sanitize site settings data
+function sanitizeSiteSettings(settings: SiteSettings): SiteSettings {
+  return {
+    ...settings,
+    siteName: sanitizeString(settings.siteName),
+    siteDescription: sanitizeString(settings.siteDescription),
+    contactEmail: sanitizeString(settings.contactEmail),
+    whatsappNumber: sanitizeString(settings.whatsappNumber),
+  };
+}
+
+// Sanitize service override data
+function sanitizeServiceOverride(patch: any): any {
+  if (!patch || typeof patch !== "object") return {};
+  
+  const result: any = {};
+  if (patch.featured !== undefined) result.featured = Boolean(patch.featured);
+  if (patch.visible !== undefined) result.visible = Boolean(patch.visible);
+  if (patch.order !== undefined) result.order = Number(patch.order);
+  if (patch.title !== undefined) result.title = sanitizeString(patch.title);
+  if (patch.short !== undefined) result.short = sanitizeString(patch.short);
+  if (patch.description !== undefined) result.description = sanitizeString(patch.description);
+  
+  return result;
+}
+
 const LOCAL_KEYS = {
   visitorId: "dalni_visitor_id",
   admin: "dalni_admin",
@@ -83,8 +186,6 @@ export const ALLOWED_EMAILS: string[] = (import.meta.env.VITE_ADMIN_EMAILS || "a
   .map((email) => email.trim().toLowerCase())
   .filter(Boolean);
 
-export const ADMIN_PASSWORD: string = import.meta.env.VITE_ADMIN_PASSWORD || "";
-
 // ---------- Settings ----------
 export async function getSiteSettings(): Promise<SiteSettings> {
   try {
@@ -106,8 +207,10 @@ export async function getSiteSettings(): Promise<SiteSettings> {
 export async function saveSiteSettings(settings: SiteSettings): Promise<void> {
   const path = "site_settings/default";
   try {
+    // Validate and sanitize site settings before saving
+    const sanitizedSettings = sanitizeSiteSettings(settings);
     const docRef = doc(db, "site_settings", "default");
-    await setDoc(docRef, { data: settings }, { merge: true });
+    await setDoc(docRef, { data: sanitizedSettings }, { merge: true });
   } catch (error) {
     handleFirestoreError(error, OperationType.WRITE, path);
   }
@@ -141,10 +244,12 @@ export async function getServiceById(id: string): Promise<Service | undefined> {
 export async function updateService(id: string, patch: ServiceOverride): Promise<void> {
   const path = `service_overrides/${id}`;
   try {
+    // Validate and sanitize service override data
+    const sanitizedPatch = sanitizeServiceOverride(patch);
     const docRef = doc(db, "service_overrides", id);
     const docSnap = await getDoc(docRef);
     const existing = docSnap.exists() ? (docSnap.data().data || {}) : {};
-    const merged = { ...existing, ...patch };
+    const merged = { ...existing, ...sanitizedPatch };
     await setDoc(docRef, { data: merged }, { merge: true });
   } catch (error) {
     handleFirestoreError(error, OperationType.WRITE, path);
@@ -192,9 +297,12 @@ export async function getRequests(): Promise<ContactRequest[]> {
 
 export async function addRequest(data: Omit<ContactRequest, "id" | "status" | "created_date">): Promise<void> {
   try {
+    // Validate and sanitize input data
+    const sanitizedData = sanitizeAndValidateContactRequest(data);
+    
     const newId = doc(collection(db, "contact_requests")).id;
     const newRequest = {
-      ...data,
+      ...sanitizedData,
       id: newId,
       status: "new" as const,
       created_date: new Date().toISOString()
@@ -202,6 +310,7 @@ export async function addRequest(data: Omit<ContactRequest, "id" | "status" | "c
     await setDoc(doc(db, "contact_requests", newId), newRequest);
   } catch (error) {
     console.warn("Failed to add contact request:", error);
+    throw error; // Re-throw to allow UI to handle the error
   }
 }
 
@@ -271,27 +380,27 @@ export async function getVisits(): Promise<Visit[]> {
 }
 
 // ---------- Admin Auth ----------
+// Admin status is determined solely by Firebase Auth with email whitelisting
+// No password authentication is used - only Google Sign-In with whitelisted emails
 export function isAdmin(): boolean {
-  // Check localstorage or active user session
+  // Check if user is authenticated and has admin privileges via localStorage
   const localAdmin = localStorage.getItem(LOCAL_KEYS.admin) === "1";
   const user = auth.currentUser;
-  if (user && user.email) {
+  
+  // If localStorage indicates admin, verify Firebase auth
+  if (localAdmin && user && user.email) {
     const emailLower = user.email.toLowerCase();
     if (ALLOWED_EMAILS.includes(emailLower)) {
       return true;
     }
+    // If email doesn't match whitelist, remove admin flag
+    localStorage.removeItem(LOCAL_KEYS.admin);
   }
-  return localAdmin;
-}
-
-export function adminLogin(email: string, password: string): boolean {
-  if (ALLOWED_EMAILS.includes(email.trim().toLowerCase()) && password === ADMIN_PASSWORD) {
-    localStorage.setItem(LOCAL_KEYS.admin, "1");
-    return true;
-  }
+  
   return false;
 }
 
+// Enhanced admin authentication using Firebase Auth only
 export async function adminGoogleLogin(providedEmail?: string): Promise<boolean> {
   if (providedEmail) {
     const emailLower = providedEmail.trim().toLowerCase();
